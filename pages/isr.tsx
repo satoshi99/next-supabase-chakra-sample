@@ -1,14 +1,14 @@
-import { Button, Flex, Heading, Link } from '@chakra-ui/react'
-import { GetStaticProps, NextPage } from 'next'
-import { useRouter } from 'next/router'
 import NextLink from 'next/link'
+import { Button, Flex, Heading, Link } from '@chakra-ui/react'
+import type { GetStaticProps, NextPage } from 'next'
 import { Layout } from '../components/Layout'
+import { Tables } from '../components/TableComponent'
 import { Notice, Todo } from '../types/types'
 import { supabase } from '../utils/supabase'
-import { Tables } from '../components/TableComponent'
+import { useRouter } from 'next/router'
 
 export const getStaticProps: GetStaticProps = async () => {
-  console.log('getStaticProps/ssg invoked')
+  console.log('getStaticProps/isr invoked')
   const { data: todos } = await supabase
     .from('todos')
     .select('*')
@@ -18,7 +18,7 @@ export const getStaticProps: GetStaticProps = async () => {
     .select('*')
     .order('created_at', { ascending: true })
 
-  return { props: { todos, notices } }
+  return { props: { todos, notices }, revalidate: 5 }
 }
 
 type StaticProps = {
@@ -26,21 +26,21 @@ type StaticProps = {
   notices: Notice[]
 }
 
-const Ssg: NextPage<StaticProps> = ({ todos, notices }) => {
+const Isr: NextPage<StaticProps> = ({ todos, notices }) => {
   const router = useRouter()
   return (
-    <Layout title="SSG">
-      <Heading mb="14" textColor="teal">
-        Data Fetching with SSG (Static-site generation)
-      </Heading>
+    <Layout title="ISR">
+      <Flex direction="column">
+        <Heading mb="14" textColor="teal">
+          Data Fetching with ISR (Incremental Static Regeneration)
+        </Heading>
+      </Flex>
       <Flex direction="row" gap="10">
         <Tables todos={todos} notices={notices} />
       </Flex>
-      <Flex direction="column" my="10" align="center">
+      <Flex direction="column" my="10" align="center" gap="5">
         <NextLink href="/ssr" prefetch={false} passHref>
-          <Link mb="5" color="blue">
-            Link to SSR
-          </Link>
+          <Link color="blue">Link to SSR</Link>
         </NextLink>
         <Button colorScheme="orange" onClick={() => router.push('/ssr')}>
           Router to SSR
@@ -50,4 +50,4 @@ const Ssg: NextPage<StaticProps> = ({ todos, notices }) => {
   )
 }
 
-export default Ssg
+export default Isr
